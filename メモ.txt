@@ -1,0 +1,7 @@
+①pip(3?) install pipenvで仮想環境作成用モジュールのインストール
+②pipenv shellで仮想環境を立ち上げる
+③pipenv install --dev flake8 autopep8(何に使うかは謎)
+  pipenv install モジュール名 でモジュールを仮想環境にインストールする
+　pip install --dev モジュール名 => 開発にしか使わないモジュール(本番環境では使われない)をインストールする
+④django-admin startproject config . で必要なファイルを作成
+⑤python manage.py runserverでサーバーを立ち上げる
