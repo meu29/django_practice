@@ -4,4 +4,12 @@
   pipenv install モジュール名 でモジュールを仮想環境にインストールする
 　pip install --dev モジュール名 => 開発にしか使わないモジュール(本番環境では使われない)をインストールする
 ④django-admin startproject config . で必要なファイルを作成
-⑤python manage.py runserverでサーバーを立ち上げる
+⑤python3 manage.py startapp userでアプリを作成
+⑥settings.pyにimport osを追記
+  'DIRS': []を'DIRS': [os.path.join(BASE_DIR, "templates")]に書き換える
+  (htmlが存在するフォルダーを指定する?)
+
+python3 manage.py runserverでサーバーを立ち上げる
+You have 18 unapplied migration(s). Your project may not work properly until you apply the migrations for app(s): admin, auth, contenttypes, sessions.
+Run 'python manage.py migrate' to apply them.は無視して良い
+
