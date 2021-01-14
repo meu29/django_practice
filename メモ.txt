@@ -13,3 +13,5 @@ python3 manage.py runserverでサーバーを立ち上げる
 You have 18 unapplied migration(s). Your project may not work properly until you apply the migrations for app(s): admin, auth, contenttypes, sessions.
 Run 'python manage.py migrate' to apply them.は無視して良い
 
+mekemigrations -> マイグレーション pythonでの記述をsql文に変換?
+migrate -> マイグレート マイグレーションによって作成されたsql文を実行?
