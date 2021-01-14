@@ -4,12 +4,51 @@
     <head>
         <meta charset="utf-8">
         <title>t-clone</title>
+        <!-- cdnはbase.htmlに読み込む -->
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
     </head>
     <body>
         <header>
+            <a href="/">TOP</a>
+            <a href="about">このサイトについて</a>
         </header>
         <main>
+            <div id="app">
+                <div>
+                    <textarea v-model="tweetContent" placeholder="いまなにしてる？"></textarea>
+                    <input type="button" value="ツイート" v-on:click="tweet">
+                </div>
+                <p v-for="tweet in tweets">[[ tweet ]]</p>
+            </div>
+            {% comment %}index.htmlの{% block content %}{% endblock content %}で囲まれた要素が挿入される{% endcomment %}
             {% block content %}{% endblock content %}
         </main>
+        <script>
+            var app = new Vue({
+                delimiters: ["[[", "]]"], /* {変数名}だとdjangoの表記と被るので[[変数名]]に変更する */
+                el: "#app",
+                data: {
+                    tweetContent: "",
+                    tweets: [],
+                },
+                methods: {
+                    tweet: function() {
+                        /*
+                        var opt = {
+                            "method": "post", 
+                            "headers": {"Content-Type": "application/json"},
+                            "body": JSON.stringify({"content": app.tweetContent}),
+                        }
+                        fetch("/post", opt)
+                        .then((res) => res.json())
+                        .then((res) => alert(res.message))
+                        .catch((err) => alert(err));
+                        */
+                        app.tweets.push(app.tweetContent);
+                        app.tweetContent = "";
+                    }
+                }
+            });
+        </script>
     </body>
 </html>

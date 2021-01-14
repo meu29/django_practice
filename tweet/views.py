@@ -1,12 +1,21 @@
-from django.views.generic import ListView
+#ファイル名にビューとあるが実際はコントローラーの役割?
+from django.http import HttpResponse
+import json
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.shortcuts import render
 #tweet/models.pyのPostクラスをインポート?
 from .models import Post
 
-class PostListView(ListView):
-    model = Post
-    template_name = "tweet/index.html"
-    context_object_name = "posts"
-    #表示する順番 -で新しい投稿から表示?
-    ordering = ["-date_posted"]
-    #1ページに表示するツイート数
-    paginate_by = 5
+def indexView(request):
+    #model = Post
+    return render(request, "tweet/index.html")
+
+def aboutView(request):
+    return render(request, "tweet/about.html")
+
+@ensure_csrf_cookie
+def fetch(request):
+    content = request.POST()
+    response = json.dumps({"message": "まんちお！"}, ensure_ascii=False, indent=2) 
+    return HttpResponse(response) 
+        
