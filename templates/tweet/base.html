@@ -15,10 +15,18 @@
         <main>
             <div id="app">
                 <div>
-                    <textarea v-model="tweetContent" placeholder="いまなにしてる？"></textarea>
-                    <input type="button" value="ツイート" v-on:click="tweet">
+                    <input type="button" value="更新" v-on:click="getTweet">
                 </div>
-                <p v-for="tweet in tweets">[[ tweet ]]</p>
+                <div>
+                    <textarea v-model="tweetContent" placeholder="いまなにしてる？"></textarea>
+                    <input type="button" value="ツイート" v-on:click="postTweet">
+                </div>
+                <div v-for="tweet in tweets">
+                    {% comment  %}Object.values(tweet)と同じ{% endcomment %}
+                    <span v-for="item in tweet">
+                        [[ item ]]
+                    </span>
+                </div>
             </div>
             {% comment %}index.htmlの{% block content %}{% endblock content %}で囲まれた要素が挿入される{% endcomment %}
             {% block content %}{% endblock content %}
@@ -32,20 +40,30 @@
                     tweets: [],
                 },
                 methods: {
-                    tweet: function() {
+                    getTweet: function() {
+                        fetch("/get")
+                        .then((res) => res.json())
+                        .then((res) => app.tweets = res.tweets)
+                        .thne((err) => alert(err));
+                    },
+                    postTweet: function() {
+                        /* cookieが増えたら使えなくなるかも */
                         /*
+                        alert(document.cookie)
                         var opt = {
                             "method": "post", 
                             "headers": {"Content-Type": "application/json"},
                             "body": JSON.stringify({"content": app.tweetContent}),
+                            "X-CSRFToken": document.cookie.split("=")[1]
                         }
                         fetch("/post", opt)
                         .then((res) => res.json())
-                        .then((res) => alert(res.message))
+                        .then((res) => {
+                            pp.tweets.push(app.tweetContent);
+                            app.tweetContent = "";
+                        })
                         .catch((err) => alert(err));
                         */
-                        app.tweets.push(app.tweetContent);
-                        app.tweetContent = "";
                     }
                 }
             });
