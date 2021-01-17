@@ -10,7 +10,9 @@ urlpatterns = [
     #templates/tweet/index.htmlをbase.htmlに埋め込んで出力
     path("", views.indexView, name="index"),
     path("about", views.aboutView, name="about"),
-    path("get", views.fetch),
-    path("post", views.fetch)
+    path("get", views.getTweet),
+    path("post", views.postTweet),
+    path("like", views.addLikeCount),
+    path("delete", views.deleteTweet)
     #path("/post", )
 ]

@@ -13,19 +13,20 @@
             <a href="about">このサイトについて</a>
         </header>
         <main>
-            <div id="app" v-on:load="onLoad">
-                <div>
-                    <input type="button" value="更新" v-on:click="getTweet">
-                </div>
+            <div id="app">
                 <div>
                     <textarea v-model="tweetContent" placeholder="いまなにしてる？"></textarea>
                     <input type="button" value="ツイート" v-on:click="postTweet">
                 </div>
                 <div v-for="tweet in tweets">
-                    {% comment  %}Object.values(tweet)と同じ{% endcomment %}
-                    <span v-for="item in tweet">
-                        [[ item ]]
-                    </span>
+                    <div class="tweet">
+                        <p><span class="author">[[ tweet.author ]]</span><span class="date_posted">[[ tweet.date_posted ]]</span></p>
+                        <div>[[ tweet.content ]]</div>
+                        <div>
+                            <input type="button" value="いいね" v-on:click="addLikeCount(tweet.id)"><span>[[ tweet.likes ]]</span>
+                            <input type="button" value="ツイートを削除" v-on:click="deleteTweet(tweet.id)"><span>
+                        </div>
+                    </div>
                 </div>
             </div>
             {% comment %}index.htmlの{% block content %}{% endblock content %}で囲まれた要素が挿入される{% endcomment %}
@@ -40,10 +41,11 @@
                     tweets: [],
                 },
                 methods: {
-                    onLoad: function() { /* できてない */
-                        alert("まんち！")
-                        this.getTweet();
+                    /* bodyにv-on:loadだと実行されなかった */
+                    window:onload = function() {
+                        app.getTweet();
                     },
+                    /* onloadの中には書かず別々にしておく */
                     getTweet: function() {
                         fetch("/get")
                         .then((res) => res.json())
@@ -51,18 +53,44 @@
                         .catch((err) => alert(err));
                     },
                     postTweet: function() {
+                        var newPost = {"content": app.tweetContent, "author": "bot", "date_posted": new Date(), "likes": 0}
                         var opt = {
                             "method": "post", 
                             "headers": {"Content-Type": "application/json", "X-CSRFToken": document.cookie.split("=")[1]},
-                            "body": JSON.stringify({"content": app.tweetContent})
+                            "body": JSON.stringify(newPost)
                         };
                         fetch("/post", opt)
                         .then((res) => res.json())
                         .then((res) => {
-                            app.tweets.push({
-                                "content": app.tweetContent, "author": "bot", "post_date": new Date(), "likes": 0
-                            });
+                            app.tweets = app.tweets.concat(newPost);
                             app.tweetContent = "";
+                        })
+                        .catch((err) => alert(err));
+                    },
+                    addLikeCount: function(id) {
+                        var opt = {
+                            "method": "post", 
+                            "headers": {"Content-Type": "application/json", "X-CSRFToken": document.cookie.split("=")[1]},
+                            /* idは1から始まるのでhtml上では-1する */
+                            "body": JSON.stringify({"id": id, "likes": app.tweets[id - 1].likes})
+                        };
+                        fetch("/like", opt)
+                        .then((res) => res.json())
+                        .then((res) => app.tweets[id - 1].likes += 1)
+                        .catch((err) => alert(err));
+                    },
+                    deleteTweet: function(id) {
+                        var opt = {
+                            "method": "post", 
+                            "headers": {"Content-Type": "application/json", "X-CSRFToken": document.cookie.split("=")[1]},
+                            /* idは1から始まるのでhtml上では-1する */
+                            "body": JSON.stringify({"id": id})
+                        };
+                        fetch("/delete", opt)
+                        .then((res) => res.json())
+                        .then((res) => {
+                            app.tweets = app.tweets.filter(function(tweet) { return tweet.id != id });
+                            alert("ツイートを削除しました");
                         })
                         .catch((err) => alert(err));
                     }
@@ -72,6 +100,12 @@
         <style>
             header {
                 margin-bottom: 20px;
+            }
+            .tweet {
+                border: ridge;
+            }
+            .author {
+                margin-right: 10px;
             }
         </style>
     </body>

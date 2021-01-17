@@ -14,21 +14,36 @@ def indexView(request):
 def aboutView(request):
     return render(request, "tweet/about.html")
 
-#https://hitsujicloud.com/2020/03/09/post-346/
-def fetch(request):
-    if request.method == "GET":
-        #QuerySetをjsonに変換  json.dumps()だとダメ
-        tweets = list(Post.objects.all().values()) 
-        for i in range(len(tweets)):
-            tweets[i]["date_posted"] = str(tweets[i]["date_posted"])
-        response = json.dumps({"tweets": json.dumps(tweets)})
-    else:
-        request = json.loads(request.body.decode())
-        print(request["content"])
-        #posted_dateとlikesは省略(自動で追加してくれる)
-        #newPost = Post(content = "かかか", author = "bot")
-        #newPost.save()
-        response = json.dumps({"message": "まんちお！"}) 
+#if request.method == "GET":
+def getTweet(request):
+    #QuerySetをjsonに変換  json.dumps()だとダメ
+    tweets = list(Post.objects.all().values()) 
+    for i in range(len(tweets)):
+        tweets[i]["date_posted"] = str(tweets[i]["date_posted"])
 
-    return HttpResponse(response) 
-        
+    return HttpResponse(json.dumps({"tweets": json.dumps(tweets)})) 
+
+def postTweet(request):
+
+    request = json.loads(request.body.decode())
+    #posted_dateとlikesは省略(自動で追加してくれる)
+    newPost = Post(content = request["content"], author = request["author"])
+    #勝手にレコードにidが割り振られる
+    newPost.save()
+
+    return HttpResponse(json.dumps({"message": ""})) 
+    
+def addLikeCount(request):
+
+    request = json.loads(request.body.decode())
+    #<<カラム名>>__contains = 値 -> where カラム名 == 値
+    Post.objects.filter(id__contains = request["id"]).update(likes = request["likes"] + 1)
+
+    return HttpResponse(json.dumps({"message": ""})) 
+
+def deleteTweet(request):
+
+    request = json.loads(request.body.decode())
+    Post.objects.filter(id__contains = request["id"]).delete()
+    return HttpResponse(json.dumps({"message": ""})) 
+
