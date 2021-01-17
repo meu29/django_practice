@@ -13,7 +13,7 @@
             <a href="about">このサイトについて</a>
         </header>
         <main>
-            <div id="app">
+            <div id="app" v-on:load="onLoad">
                 <div>
                     <input type="button" value="更新" v-on:click="getTweet">
                 </div>
@@ -40,33 +40,39 @@
                     tweets: [],
                 },
                 methods: {
+                    onLoad: function() { /* できてない */
+                        alert("まんち！")
+                        this.getTweet();
+                    },
                     getTweet: function() {
                         fetch("/get")
                         .then((res) => res.json())
-                        .then((res) => app.tweets = res.tweets)
-                        .thne((err) => alert(err));
+                        .then((res) => app.tweets = app.tweets.concat(JSON.parse(res.tweets)))
+                        .catch((err) => alert(err));
                     },
                     postTweet: function() {
-                        /* cookieが増えたら使えなくなるかも */
-                        /*
-                        alert(document.cookie)
                         var opt = {
                             "method": "post", 
-                            "headers": {"Content-Type": "application/json"},
-                            "body": JSON.stringify({"content": app.tweetContent}),
-                            "X-CSRFToken": document.cookie.split("=")[1]
-                        }
+                            "headers": {"Content-Type": "application/json", "X-CSRFToken": document.cookie.split("=")[1]},
+                            "body": JSON.stringify({"content": app.tweetContent})
+                        };
                         fetch("/post", opt)
                         .then((res) => res.json())
                         .then((res) => {
-                            pp.tweets.push(app.tweetContent);
+                            app.tweets.push({
+                                "content": app.tweetContent, "author": "bot", "post_date": new Date(), "likes": 0
+                            });
                             app.tweetContent = "";
                         })
                         .catch((err) => alert(err));
-                        */
                     }
                 }
             });
         </script>
+        <style>
+            header {
+                margin-bottom: 20px;
+            }
+        </style>
     </body>
 </html>

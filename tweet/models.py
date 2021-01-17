@@ -1,13 +1,13 @@
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth.models import User
+#from django.contrib.auth.models import User
 
 class Post(models.Model):
 
     #ツイート本文
     content = models.TextField()
     #ツイートした人 主キー制約 ユーザーが消されたら投稿も消す
-    author = models.ForeignKey(User, on_delete = models.CASCADE)
+    author = models.CharField(max_length = 20)
     #ツイート時刻
     date_posted = models.DateTimeField(default = timezone.now)
     #いいね 初期値0

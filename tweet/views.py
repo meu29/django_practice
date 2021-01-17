@@ -2,7 +2,6 @@
 from django.http import HttpResponse
 import json
 from django.shortcuts import render
-#from django.views.decorators.csrf import ensure_csrf_cookie
 #tweet/models.pyのPostクラスをインポート?
 from .models import Post
 
@@ -15,14 +14,20 @@ def indexView(request):
 def aboutView(request):
     return render(request, "tweet/about.html")
 
+#https://hitsujicloud.com/2020/03/09/post-346/
 def fetch(request):
     if request.method == "GET":
-        response = json.dumps({"tweets": [
-            {"content": "あああ", "author": "bot", "date_posted": "2020/9/11", "liles": 0},
-            {"content": "いいい", "author": "bot", "date_posted": "2020/9/11", "liles": 0},
-            {"content": "ううう", "author": "bot", "date_posted": "2020/9/11", "liles": 0},
-        ]}) 
+        #QuerySetをjsonに変換  json.dumps()だとダメ
+        tweets = list(Post.objects.all().values()) 
+        for i in range(len(tweets)):
+            tweets[i]["date_posted"] = str(tweets[i]["date_posted"])
+        response = json.dumps({"tweets": json.dumps(tweets)})
     else:
+        request = json.loads(request.body.decode())
+        print(request["content"])
+        #posted_dateとlikesは省略(自動で追加してくれる)
+        #newPost = Post(content = "かかか", author = "bot")
+        #newPost.save()
         response = json.dumps({"message": "まんちお！"}) 
 
     return HttpResponse(response) 
