@@ -15,15 +15,15 @@
         <main>
             <div id="app">
                 <div>
-                    <textarea v-model="tweetContent" placeholder="いまなにしてる？"></textarea>
-                    <input type="button" value="ツイート" v-on:click="postTweet">
+                    <textarea v-model="tweetContent" placeholder="いまなにしてる？" v-on:keyup="switchDisabled"></textarea>
+                    <input id="tweetBuuton" type="button" value="ツイート" v-on:click="postTweet" disabled="True">
                 </div>
                 <div v-for="tweet in tweets">
                     <div class="tweet">
                         <p><span class="author">[[ tweet.author ]]</span><span class="date_posted">[[ tweet.date_posted ]]</span></p>
                         <div>[[ tweet.content ]]</div>
                         <div>
-                            <input type="button" value="いいね" v-on:click="addLikeCount(tweet.id)"><span>[[ tweet.likes ]]</span>
+                            <input type="button" class="likeButton" value="いいね" v-on:click="addLikeCount(tweet.id)"><span>[[ tweet.likes ]]</span>
                             <input type="button" value="ツイートを削除" v-on:click="deleteTweet(tweet.id)"><span>
                         </div>
                     </div>
@@ -52,6 +52,13 @@
                         .then((res) => app.tweets = app.tweets.concat(JSON.parse(res.tweets)))
                         .catch((err) => alert(err));
                     },
+                    switchDisabled: function() {
+                        if (app.tweetContent.length == 0) {
+                            document.getElementById("tweetBuuton").disabled = "true";
+                        } else { 
+                            document.getElementById("tweetBuuton").removeAttribute("disabled");
+                        }
+                    },
                     postTweet: function() {
                         var newPost = {"content": app.tweetContent, "author": "bot", "date_posted": new Date(), "likes": 0}
                         var opt = {
@@ -62,7 +69,9 @@
                         fetch("/post", opt)
                         .then((res) => res.json())
                         .then((res) => {
+                            newPost.id = res.id
                             app.tweets = app.tweets.concat(newPost);
+                            alert(app.tweets)
                             app.tweetContent = "";
                         })
                         .catch((err) => alert(err));
@@ -76,7 +85,12 @@
                         };
                         fetch("/like", opt)
                         .then((res) => res.json())
-                        .then((res) => app.tweets[id - 1].likes += 1)
+                        .then((res) => {
+                            /* 別のツイートがいねされたりエラーになったりする */
+                            var index = app.tweets.indexOf(app.tweets.map(function(tweet) { return tweet.id }));
+                            alert(app.tweets.map(function(tweet) { return tweet.id }))
+                            //app.tweets[index].likes += 1;
+                        })
                         .catch((err) => alert(err));
                     },
                     deleteTweet: function(id) {
@@ -98,14 +112,27 @@
             });
         </script>
         <style>
+            body {
+                background: #DDDDDD;
+            }
             header {
                 margin-bottom: 20px;
             }
+            #tweetBuuton {
+                color: white;
+                background: orange;
+                border: none;
+                border-radius: 10px;
+            }
             .tweet {
+                background: white;
                 border: ridge;
             }
             .author {
                 margin-right: 10px;
+            }
+            .like {
+
             }
         </style>
     </body>

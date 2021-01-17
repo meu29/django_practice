@@ -5,10 +5,7 @@ from django.shortcuts import render
 #tweet/models.pyのPostクラスをインポート?
 from .models import Post
 
-#@ensure_csrf_cookie
-
 def indexView(request):
-    #model = Post
     return render(request, "tweet/index.html")
 
 def aboutView(request):
@@ -31,7 +28,7 @@ def postTweet(request):
     #勝手にレコードにidが割り振られる
     newPost.save()
 
-    return HttpResponse(json.dumps({"message": ""})) 
+    return HttpResponse(json.dumps({"id": list(Post.objects.all().values())[-1]["id"]}))
     
 def addLikeCount(request):
 
