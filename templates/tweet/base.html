@@ -9,24 +9,32 @@
     </head>
     <body>
         <header>
-            <a href="/">TOP</a>
+            <!-- ページを再読込しないと他の端末・タブからの操作が反映されない(input type="button" v-on:click="getTweet"では無理) -->
+            <a href="/">HOME</a>
             <a href="about">このサイトについて</a>
         </header>
         <main>
             <div id="app">
-                <div>
-                    <textarea v-model="tweetContent" placeholder="いまなにしてる？" v-on:keyup="switchDisabled"></textarea>
+                <div id="form">
+                    <textarea v-model="tweetContent" rows="1" columns="120" placeholder="いまなにしてる？" v-on:keyup="switchDisabled"></textarea>
                     <input id="tweetBuuton" type="button" value="ツイート" v-on:click="postTweet" disabled="True">
                 </div>
                 <div v-for="tweet in tweets">
                     <div class="tweet">
-                        <p><span class="author">[[ tweet.author ]]</span><span class="date_posted">[[ tweet.date_posted ]]</span></p>
+                        <p>
+                            <img class="iconInTweets" src="https://knsoza1.com/wp-content/uploads/2020/07/8d27ad3552fd86901f4976429ad22ce2.png">
+                            <span class="author">[[ tweet.author ]]</span>
+                            <span class="date_posted">[[ tweet.date_posted ]]</span>
+                        </p>
                         <div>[[ tweet.content ]]</div>
                         <div>
                             <input type="button" class="likeButton" value="いいね" v-on:click="addLikeCount(tweet.id)"><span>[[ tweet.likes ]]</span>
                             <input type="button" value="ツイートを削除" v-on:click="deleteTweet(tweet.id)"><span>
                         </div>
                     </div>
+                </div>
+                <div v-for="trend in trends">
+                    <p>[[trend]]</p>
                 </div>
             </div>
             {% comment %}index.htmlの{% block content %}{% endblock content %}で囲まれた要素が挿入される{% endcomment %}
@@ -39,6 +47,7 @@
                 data: {
                     tweetContent: "",
                     tweets: [],
+                    trends: [],
                 },
                 methods: {
                     /* bodyにv-on:loadだと実行されなかった */
@@ -49,7 +58,10 @@
                     getTweet: function() {
                         fetch("/get")
                         .then((res) => res.json())
-                        .then((res) => app.tweets = app.tweets.concat(JSON.parse(res.tweets)))
+                        .then((res) => {
+                            app.tweets = app.tweets.concat(JSON.parse(res.tweets))
+                            app.trends = res.trends;
+                        })
                         .catch((err) => alert(err));
                     },
                     switchDisabled: function() {
@@ -71,27 +83,25 @@
                         .then((res) => {
                             newPost.id = res.id
                             app.tweets = app.tweets.concat(newPost);
-                            alert(app.tweets)
                             app.tweetContent = "";
                         })
                         .catch((err) => alert(err));
                     },
                     addLikeCount: function(id) {
-                        var opt = {
-                            "method": "post", 
-                            "headers": {"Content-Type": "application/json", "X-CSRFToken": document.cookie.split("=")[1]},
-                            /* idは1から始まるのでhtml上では-1する */
-                            "body": JSON.stringify({"id": id, "likes": app.tweets[id - 1].likes})
-                        };
-                        fetch("/like", opt)
-                        .then((res) => res.json())
-                        .then((res) => {
-                            /* 別のツイートがいねされたりエラーになったりする */
-                            var index = app.tweets.indexOf(app.tweets.map(function(tweet) { return tweet.id }));
-                            alert(app.tweets.map(function(tweet) { return tweet.id }))
-                            //app.tweets[index].likes += 1;
-                        })
-                        .catch((err) => alert(err));
+                        for (var i = 0; i <= app.tweets.length - 1; i++) {
+                            if (app.tweets[i].id == id) {
+                                var opt = {
+                                    "method": "post", 
+                                    "headers": {"Content-Type": "application/json", "X-CSRFToken": document.cookie.split("=")[1]},
+                                    "body": JSON.stringify({"id": id, "likes": app.tweets[i].likes})
+                                };
+                                fetch("/like", opt)
+                                .then((res) => res.json())
+                                .then((res) => app.tweets[i].likes += 1)
+                                .catch((err) => alert(err));
+                                break;
+                            }
+                        }
                     },
                     deleteTweet: function(id) {
                         var opt = {
@@ -104,7 +114,6 @@
                         .then((res) => res.json())
                         .then((res) => {
                             app.tweets = app.tweets.filter(function(tweet) { return tweet.id != id });
-                            alert("ツイートを削除しました");
                         })
                         .catch((err) => alert(err));
                     }
@@ -112,11 +121,25 @@
             });
         </script>
         <style>
+            * { 
+                margin: 0px; 
+                padding: 0px; 
+            }
             body {
-                background: #DDDDDD;
+
             }
             header {
                 margin-bottom: 20px;
+            }
+            #app {
+                text-align: center;
+            }
+            #form {
+                margin-bottom: 30px;
+            }
+            textarea {
+                width: 300px;
+                height: 7em;
             }
             #tweetBuuton {
                 color: white;
@@ -126,7 +149,10 @@
             }
             .tweet {
                 background: white;
-                border: ridge;
+                border-bottom: ridge thin;
+            }
+            .iconInTweets {
+                width: 70px;
             }
             .author {
                 margin-right: 10px;

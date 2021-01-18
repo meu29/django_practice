@@ -17,3 +17,6 @@ mekemigrations -> マイグレーション pythonでの記述をsql文に変換?
 migrate -> マイグレート マイグレーションによって作成されたsql文を実行?
 python3 manage.py makemigrations
 python3 manage.py migrate
+
+新しくモジュールをインストールした場合はconfig/settings.pyのINSTALLED_APPSに追記
+INSTALLED_APPS = ['janome']

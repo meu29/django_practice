@@ -4,6 +4,8 @@ import json
 from django.shortcuts import render
 #tweet/models.pyのPostクラスをインポート?
 from .models import Post
+from janome.tokenizer import Tokenizer
+import re
 
 def indexView(request):
     return render(request, "tweet/index.html")
@@ -13,12 +15,26 @@ def aboutView(request):
 
 #if request.method == "GET":
 def getTweet(request):
+
+    tokenizer = Tokenizer()
+    wordDic = {}
+
     #QuerySetをjsonに変換  json.dumps()だとダメ
     tweets = list(Post.objects.all().values()) 
-    for i in range(len(tweets)):
-        tweets[i]["date_posted"] = str(tweets[i]["date_posted"])
 
-    return HttpResponse(json.dumps({"tweets": json.dumps(tweets)})) 
+    for i in range(len(tweets)):
+        tweets[i]["date_posted"] = str(tweets[i]["date_posted"])#trends
+        for token in tokenizer.tokenize(tweets[i]["content"]):
+            if len(token.surface) < 3 and re.match(r"[一-龥]+", token.surface) == None:
+                pass
+            elif token.surface not in wordDic:
+                wordDic[token.surface] = 1
+            else:
+                wordDic[token.surface] += 1
+    
+    #5回以上使用された単語の内回数が多いもの
+    trends = [tupleItem[0] for tupleItem in sorted(wordDic.items(), key=lambda x:x[1], reverse=True) if tupleItem[1] >= 5]
+    return HttpResponse(json.dumps({"tweets": json.dumps(tweets), "trends": trends})) 
 
 def postTweet(request):
 
