@@ -6,6 +6,7 @@ from django.shortcuts import render
 from .models import Post
 from janome.tokenizer import Tokenizer
 import re
+import urllib.parse
 
 def indexView(request):
     return render(request, "tweet/index.html")
@@ -19,8 +20,11 @@ def getTweet(request):
     tokenizer = Tokenizer()
     wordDic = {}
 
-    #QuerySetをjsonに変換  json.dumps()だとダメ
-    tweets = list(Post.objects.all().values()) 
+    if re.search(r"keyword=", request.get_full_path()) != None:
+        keyword = urllib.parse.unquote(request.get_full_path().split("keyword=")[1])
+        tweets = list(Post.objects.filter(content__contains = keyword).values())
+    else:
+        tweets = list(Post.objects.all().values())
 
     for i in range(len(tweets)):
         tweets[i]["date_posted"] = str(tweets[i]["date_posted"])#trends

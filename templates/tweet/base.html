@@ -10,9 +10,6 @@
     <body>
         <header>
             <span>TClone</span>
-            <!-- ページを再読込しないと他の端末・タブからの操作が反映されない(input type="button" v-on:click="getTweet"では無理) -->
-            <a href="/">HOME</a>
-            <a href="about">このサイトについて</a>
         </header>
         <main>
             <div id="app">
@@ -28,15 +25,16 @@
                                 <span class="author">[[ tweet.author ]]</span>
                                 <span class="date_posted">[[ tweet.date_posted ]]</span>
                             </p>
-                            <div>[[ tweet.content ]]</div>
+                            <div class="content">[[ tweet.content ]]</div>
                             <div>
                                 <input type="image" src="{% static "likeButton.png" %}" class="likeButton" value="いいね" v-on:click="addLikeCount(tweet.id)"><span>[[ tweet.likes ]]</span>
                                 <input type="button" class="deleteButton" value="ツイートを削除" v-on:click="deleteTweet(tweet.id)"><span>
                             </div>
                         </div>
                     </div>
+                    <input type="text" v-model="keyword"><!-- href属性を持つボタン -->
                     <div id="trends" v-for="trend in trends">
-                        <p>[[trend]]</p>
+                        <p>[[trend]]</p><!-- trend / sum(trend) = 注目度(%表記) マスク 注目度50% 円グラフにするのもいいかも　-->
                     </div>
                 </div>
             </div>
@@ -49,6 +47,7 @@
                 el: "#app",
                 data: {
                     tweetContent: "",
+                    keyword: "",
                     tweets: [],
                     trends: [],
                 },
@@ -62,7 +61,8 @@
                         fetch("/get")
                         .then((res) => res.json())
                         .then((res) => {
-                            app.tweets = app.tweets.concat(JSON.parse(res.tweets))
+                            /* 日付が新しい投稿を上に */
+                            app.tweets = app.tweets.concat(JSON.parse(res.tweets).reverse());
                             app.trends = res.trends;
                         })
                         .catch((err) => alert(err));
@@ -85,7 +85,8 @@
                         .then((res) => res.json())
                         .then((res) => {
                             newPost.id = res.id
-                            app.tweets = app.tweets.concat(newPost);
+                            /* 新しい投稿をページの上側に表示するため */
+                            app.tweets = [newPost].concat(app.tweets);
                             app.tweetContent = "";
                         })
                         .catch((err) => alert(err));
@@ -129,7 +130,7 @@
                 padding: 0px; 
             }
             body {
-                background: 
+
             }
             header {
                 background: #66FFFF;
@@ -142,7 +143,7 @@
                 font-weight: bold;
             }
             #app {
-                text-align: center;
+
             }
             #form {
                 margin-bottom: 30px;
@@ -150,33 +151,48 @@
             textarea {
                 width: 300px;
                 height: 7em;
+                border: ridge thin;
+                margin-left: 3%;
+                width: 55%;
             }
             #tweetBuuton {
                 color: white;
                 background: orange;
                 border: none;
                 border-radius: 10px;
+                font-size: 16px;
+                margin: 10px;
+                padding: 8px;
             }
             #flexArea {
-                /* display: flex; */
+                /* display: flex */; 
             }
             #tweets {
                 margin-left: 3%;
-                text-align: left;
                 width: 65%;
+                display: flex; 
+                flex-direction: column;
             }
             .tweet {
                 border: ridge thin;
                 padding: 2%;  
             }
             #trends {
-                display: flex;
+                display: flex; 
+                flex-direction: column;
+            }
+            .trend {
+                border: ridge thin;
             }
             .iconInTweets {
                 width: 70px;
             }
             .author {
                 margin-right: 10px;
+                margin-bottom: 10px;
+            }
+            .content {
+                margin-bottom: 10px;
             }
             .likeButton {
                 width: 20px;
