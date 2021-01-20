@@ -4,8 +4,8 @@
     <head>
         <meta charset="utf-8">
         <title>TClone</title>
-        <!-- cdnはbase.htmlに読み込む -->
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
     </head>
     <body>
         <header>
@@ -32,9 +32,9 @@
                             </div>
                         </div>
                     </div>
-                    <input type="text" v-model="keyword"><!-- href属性を持つボタン -->
-                    <div id="trends" v-for="trend in trends">
-                        <p>[[trend]]</p><!-- trend / sum(trend) = 注目度(%表記) マスク 注目度50% 円グラフにするのもいいかも　-->
+                    <!--input type="text" v-model="keyword"-->
+                    <div id="trends">
+                        <canvas id="chart"></canvas>
                     </div>
                 </div>
             </div>
@@ -63,7 +63,17 @@
                         .then((res) => {
                             /* 日付が新しい投稿を上に */
                             app.tweets = app.tweets.concat(JSON.parse(res.tweets).reverse());
-                            app.trends = res.trends;
+                            var cahrt = new Chart(document.getElementById("chart"), {
+                                type: "pie",
+                                data: {
+                                    labels: res.trends.map(function(trend) { return trend[0] }).slice(0, 5),
+                                    datasets: [{
+                                        backgroundColor: ["red", "blue", "green", "yellow", "purple"],
+                                        data: res.trends.map(function(trend) { return trend[1] }).slice(0, 5)
+                                    }]
+                                },
+                                options: {title: {display: true, text: "トレンド"}}
+                            });
                         })
                         .catch((err) => alert(err));
                     },
@@ -177,13 +187,6 @@
                 border: ridge thin;
                 padding: 2%;  
             }
-            #trends {
-                display: flex; 
-                flex-direction: column;
-            }
-            .trend {
-                border: ridge thin;
-            }
             .iconInTweets {
                 width: 70px;
             }
@@ -202,6 +205,13 @@
                 background: red;
                 border: none;
                 border-radius: 10px;
+            },
+            #trends {
+
+            }
+            #chart {
+                height: 40vw;
+                width:80vw;
             }
         </style>
     </body>

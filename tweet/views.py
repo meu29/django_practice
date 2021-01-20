@@ -37,7 +37,7 @@ def getTweet(request):
                 wordDic[token.surface] += 1
     
     #5回以上使用された単語の内回数が多いもの
-    trends = [tupleItem[0] for tupleItem in sorted(wordDic.items(), key=lambda x:x[1], reverse=True) if tupleItem[1] >= 5]
+    trends = [tupleItem for tupleItem in sorted(wordDic.items(), key=lambda x:x[1], reverse=True) if tupleItem[1] >= 5]
     return HttpResponse(json.dumps({"tweets": json.dumps(tweets), "trends": trends})) 
 
 def postTweet(request):
