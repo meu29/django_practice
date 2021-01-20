@@ -20,3 +20,7 @@ python3 manage.py migrate
 
 新しくモジュールをインストールした場合はconfig/settings.pyのINSTALLED_APPSに追記
 INSTALLED_APPS = ['janome']
+
+特定のコミットに戻す方法
+①git log
+②git reset --hard <<戻したいコミットのcommit xxxxxxx の部分>>
