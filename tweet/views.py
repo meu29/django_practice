@@ -11,9 +11,6 @@ import urllib.parse
 def indexView(request):
     return render(request, "tweet/index.html")
 
-def aboutView(request):
-    return render(request, "tweet/about.html")
-
 #if request.method == "GET":
 def getTweet(request):
 
