@@ -72,7 +72,7 @@
                                         /* null以外の場合は要素が１つであっても配列が返される */
                                         if (app.tweets[i].id == replyTweetId[0].slice(1)) {
                                             //tweet += app.tweets[i].contentだと何も表示されなくなってしまった
-                                            app.tweets[index].content = app.tweets[index].content.split(/#[0-9]+/)[1] + " " + app.tweets[i].content;
+                                            app.tweets[index].content = app.tweets[index].content.split(/#[0-9]+/)[1] + " 「" + app.tweets[i].content + "」";
                                             break;
                                         }
                                     }
