@@ -9,7 +9,7 @@
     </head>
     <body>
         <header>
-            <span>TClone</span>
+            <a href="/" style="color: white; text-decoration: none;">TClone</a>
         </header>
         <main>
             <div id="app">
@@ -17,6 +17,8 @@
                     <textarea id="tweetTextArea" v-model="tweetContent" rows="1" columns="120" placeholder="いまなにしてる？" v-on:keyup="switchDisabled"></textarea>
                     <input id="tweetBuuton" type="button" value="ツイート" v-on:click="postTweet" disabled="True">
                 </div>
+                <p style="margin-bottom: 25px; margin-left: 40%; font-size: 20px;"><span style="margin-right: 15px;">タイムライン</span><input id="trendsButton" type="button" value="トレンドを表示" v-on:click="displayTrends" style="color:white; background:lightgreen; border: none; border-radius: 10px;"></p>
+                <div id="trends"><!-- jsで作ったり消したりする --></div>
                 <div id="flexArea">
                     <div id="tweets" v-for="tweet in tweets">
                         <div class="tweet">
@@ -36,9 +38,6 @@
                         </div>
                     </div>
                     <!--input type="text" v-model="keyword"-->
-                    <div id="trends">
-                        <canvas id="chart"></canvas>
-                    </div>
                 </div>
             </div>
             {% comment %}index.htmlの{% block content %}{% endblock content %}で囲まれた要素が挿入される{% endcomment %}
@@ -67,7 +66,6 @@
                             /* 日付が新しい投稿を上に */
                             app.tweets = app.tweets.concat(JSON.parse(res.tweets).reverse());
                             app.tweets = app.tweets.map(function(tweet, index) {
-                                //tweet.content.split(/#[0-9]+/)[1]
                                 var replyTweetId = tweet.content.match(/#[0-9]+/);
                                 if (replyTweetId != null) {
                                     for (var i = index + 1; i <= app.tweets.length - 1; i++) {
@@ -81,19 +79,33 @@
                                 }
                                 return tweet;
                             });
-                            var cahrt = new Chart(document.getElementById("chart"), {
-                                type: "pie",
-                                data: {
-                                    labels: res.trends.map(function(trend) { return trend[0] }).slice(0, 5),
-                                    datasets: [{
-                                        backgroundColor: ["red", "blue", "green", "yellow", "purple"],
-                                        data: res.trends.map(function(trend) { return trend[1] }).slice(0, 5)
-                                    }]
-                                },
-                                options: {title: {display: true, text: "トレンド"}}
-                            });
+                            app.trends = res.trends;
                         })
                         .catch((err) => alert(err));
+                    },
+                    displayTrends: function() {
+                        try {
+                            document.getElementById("trends").removeChild(document.getElementById("chart"));
+                            document.getElementById("trendsButton").value = "トレンドを表示";
+                            return;
+                        } catch(e) {
+                            /* なにもしない */
+                        }
+                        var canvas = document.createElement("canvas");
+                        canvas.setAttribute("id", "chart");
+                        var cahrt = new Chart(canvas, {
+                            type: "pie",
+                            data: {
+                                labels: app.trends.map(function(trend) { return trend[0] }).slice(0, 5),
+                                datasets: [{
+                                    backgroundColor: ["red", "blue", "green", "yellow", "purple"],
+                                    data: app.trends.map(function(trend) { return trend[1] }).slice(0, 5)
+                                }]
+                            },
+                            options: {title: {display: true, text: "トレンド"}}
+                        });
+                        document.getElementById("trends").appendChild(canvas);
+                        document.getElementById("trendsButton").value = "表示を閉じる";
                     },
                     switchDisabled: function() {
                         if (app.tweetContent.length == 0) {
@@ -178,16 +190,16 @@
                 font-weight: bold;
             }
             #app {
-
             }
             #form {
                 margin-bottom: 30px;
+                margin-left: 10%;
             }
             #tweetTextArea {
                 width: 300px;
                 height: 7em;
                 border: ridge thin;
-                margin-left: 3%;
+                margin-left: 10%;
                 width: 55%;
             }
             #tweetBuuton {
@@ -203,7 +215,7 @@
                 /* display: flex */; 
             }
             #tweets {
-                margin-left: 3%;
+                margin-left: 15%;
                 width: 65%;
                 display: flex; 
                 flex-direction: column;
@@ -240,9 +252,8 @@
             #trends {
 
             }
-            #chart {
-                height: 40vw;
-                width:80vw;
+            canvas {
+                margin-bottom: 20px;
             }
         </style>
     </body>
