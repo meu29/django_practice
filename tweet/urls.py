@@ -14,5 +14,4 @@ urlpatterns = [
     path("post", views.postTweet),
     path("like", views.addLikeCount),
     path("delete", views.deleteTweet)
-    #path("/post", )
 ]

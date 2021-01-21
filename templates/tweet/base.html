@@ -14,7 +14,7 @@
         <main>
             <div id="app">
                 <div id="form">
-                    <textarea v-model="tweetContent" rows="1" columns="120" placeholder="いまなにしてる？" v-on:keyup="switchDisabled"></textarea>
+                    <textarea id="tweetTextArea" v-model="tweetContent" rows="1" columns="120" placeholder="いまなにしてる？" v-on:keyup="switchDisabled"></textarea>
                     <input id="tweetBuuton" type="button" value="ツイート" v-on:click="postTweet" disabled="True">
                 </div>
                 <div id="flexArea">
@@ -25,10 +25,13 @@
                                 <span class="author">[[ tweet.author ]]</span>
                                 <span class="date_posted">[[ tweet.date_posted ]]</span>
                             </p>
-                            <div class="content">[[ tweet.content ]]</div>
+                            <div class="content">
+                                [[ tweet.content ]]
+                            </div>
                             <div>
                                 <input type="image" src="{% static "likeButton.png" %}" class="likeButton" value="いいね" v-on:click="addLikeCount(tweet.id)"><span>[[ tweet.likes ]]</span>
-                                <input type="button" class="deleteButton" value="ツイートを削除" v-on:click="deleteTweet(tweet.id)"><span>
+                                <!-- テスト用 --><!--input type="button" class="deleteButton" value="ツイートを削除" v-on:click="deleteTweet(tweet.id)"-->
+                                <input type="button" class="replyButton" value="このツイートにコメントする" v-on:click="addTweetId(tweet.id)">
                             </div>
                         </div>
                     </div>
@@ -63,6 +66,21 @@
                         .then((res) => {
                             /* 日付が新しい投稿を上に */
                             app.tweets = app.tweets.concat(JSON.parse(res.tweets).reverse());
+                            app.tweets = app.tweets.map(function(tweet, index) {
+                                //tweet.content.split(/#[0-9]+/)[1]
+                                var replyTweetId = tweet.content.match(/#[0-9]+/);
+                                if (replyTweetId != null) {
+                                    for (var i = index + 1; i <= app.tweets.length - 1; i++) {
+                                        /* null以外の場合は要素が１つであっても配列が返される */
+                                        if (app.tweets[i].id == replyTweetId[0].slice(1)) {
+                                            //tweet += app.tweets[i].contentだと何も表示されなくなってしまった
+                                            app.tweets[index].content = app.tweets[index].content.split(/#[0-9]+/)[1] + " " + app.tweets[i].content;
+                                            break;
+                                        }
+                                    }
+                                }
+                                return tweet;
+                            });
                             var cahrt = new Chart(document.getElementById("chart"), {
                                 type: "pie",
                                 data: {
@@ -85,6 +103,7 @@
                         }
                     },
                     postTweet: function() {
+                        /* ツイートへのコメントとなるツイートのcontent => #<<id>> + ツイート本文 idは不可視 */
                         var newPost = {"content": app.tweetContent, "author": "bot", "date_posted": new Date(), "likes": 0}
                         var opt = {
                             "method": "post", 
@@ -117,6 +136,10 @@
                             }
                         }
                     },
+                    addTweetId: function(id) {
+                        scrollTo(0, 0);
+                        app.tweetContent = "#" + id + " "
+                    },
                     deleteTweet: function(id) {
                         var opt = {
                             "method": "post", 
@@ -144,9 +167,11 @@
             }
             header {
                 background: #66FFFF;
-                padding: 10px;
+                padding: 12px;
                 margin-bottom: 5%;
                 color: white;
+                font-size: 20px;
+                font-weight: bold;
             }
             input[type="button"] {
                 padding: 3px;
@@ -158,7 +183,7 @@
             #form {
                 margin-bottom: 30px;
             }
-            textarea {
+            #tweetTextArea {
                 width: 300px;
                 height: 7em;
                 border: ridge thin;
@@ -199,6 +224,12 @@
             }
             .likeButton {
                 width: 20px;
+            }
+            .replyButton {
+                color: white;
+                background: blue;
+                border: none;
+                border-radius: 10px;
             }
             .deleteButton {
                 color: white;
