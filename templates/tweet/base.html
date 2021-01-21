@@ -31,8 +31,8 @@
                                 [[ tweet.content ]]
                             </div>
                             <div>
-                                <input type="image" src="{% static "likeButton.png" %}" class="likeButton" value="いいね" v-on:click="addLikeCount(tweet.id)"><span>[[ tweet.likes ]]</span>
-                                <!-- テスト用 --><!--input type="button" class="deleteButton" value="ツイートを削除" v-on:click="deleteTweet(tweet.id)"-->
+                                <input type="image" src="{% static "likeButton.png" %}" class="likeButton" value="いいね" v-on:click="addLikeCount(tweet.id)"><span style="margin-right: 10px;">[[ tweet.likes ]]</span>
+                                <input type="button" class="deleteButton" value="ツイートを削除" v-on:click="deleteTweet(tweet.id)">
                                 <input type="button" class="replyButton" value="このツイートにコメントする" v-on:click="addTweetId(tweet.id)">
                             </div>
                         </div>
@@ -65,23 +65,26 @@
                         .then((res) => {
                             /* 日付が新しい投稿を上に */
                             app.tweets = app.tweets.concat(JSON.parse(res.tweets).reverse());
-                            app.tweets = app.tweets.map(function(tweet, index) {
-                                var replyTweetId = tweet.content.match(/#[0-9]+/);
-                                if (replyTweetId != null) {
-                                    for (var i = index + 1; i <= app.tweets.length - 1; i++) {
-                                        /* null以外の場合は要素が１つであっても配列が返される */
-                                        if (app.tweets[i].id == replyTweetId[0].slice(1)) {
-                                            //tweet += app.tweets[i].contentだと何も表示されなくなってしまった
-                                            app.tweets[index].content = app.tweets[index].content.split(/#[0-9]+/)[1] + " 「" + app.tweets[i].content + "」";
-                                            break;
-                                        }
-                                    }
-                                }
-                                return tweet;
-                            });
                             app.trends = res.trends;
+                            app.associate();
                         })
                         .catch((err) => alert(err));
+                    },
+                    associate :function() {
+                        app.tweets = app.tweets.map(function(tweet, index) {
+                            var replyTweetId = tweet.content.match(/#[0-9]+/);
+                            if (replyTweetId != null) {
+                                for (var i = index + 1; i <= app.tweets.length - 1; i++) {
+                                    /* null以外の場合は要素が１つであっても配列が返される */
+                                    if (app.tweets[i].id == replyTweetId[0].slice(1)) {
+                                        //tweet += app.tweets[i].contentだと何も表示されなくなってしまった
+                                        app.tweets[index].content = app.tweets[index].content.replace(/#[0-9]+/g, "") + " 「" + app.tweets[i].content + "」";
+                                        break;
+                                    }
+                                }
+                                }
+                            return tweet;
+                        });
                     },
                     displayTrends: function() {
                         try {
@@ -129,6 +132,7 @@
                             /* 新しい投稿をページの上側に表示するため */
                             app.tweets = [newPost].concat(app.tweets);
                             app.tweetContent = "";
+                            app.associate();
                         })
                         .catch((err) => alert(err));
                     },
@@ -188,6 +192,7 @@
             input[type="button"] {
                 padding: 3px;
                 font-weight: bold;
+                padding: 8px;
             }
             #app {
             }
@@ -209,7 +214,6 @@
                 border-radius: 10px;
                 font-size: 16px;
                 margin: 10px;
-                padding: 8px;
             }
             #flexArea {
                 /* display: flex */; 
@@ -230,9 +234,12 @@
             .author {
                 margin-right: 10px;
                 margin-bottom: 10px;
+                font-size: 16px;
             }
             .content {
-                margin-bottom: 10px;
+                margin-top: 15px;
+                margin-bottom: 15px;
+                font-size: 18px;
             }
             .likeButton {
                 width: 20px;

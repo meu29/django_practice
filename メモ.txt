@@ -24,3 +24,7 @@ INSTALLED_APPS = ['janome']
 特定のコミットに戻す方法
 ①git log
 ②git reset --hard <<戻したいコミットのcommit xxxxxxx の部分>>
+
+python3 manage.py dbshellでsqliteを操作
+.table(;はつけない)でテーブル一覧を表示
+マイグレートで作成されるテーブルの名前.. <<アプリ名>>__<<モデルクラス名>> tweet_post
